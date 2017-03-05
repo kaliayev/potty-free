@@ -16,4 +16,5 @@
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.0"]]}
-   :uberjar {:aot :all}})
+   :uberjar {:aot :all}}
+  :repl-options {:timeout 1200000})

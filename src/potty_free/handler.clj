@@ -9,8 +9,7 @@
 
 (def default-tid 1)
 
-(def gpio-port
-  (gpio/open-channel-port 17))
+(def port-num 17)
 
 (def server
   "http://dcb0e416.ngrok.io")
@@ -24,20 +23,19 @@
     (cond (= value :high) :occupied
           (= value :low) :free)))
 
-#_(defn state
-  [port]
-  (let [gpio-val (parse-gpio port)]
-    (con)))
-
 (defn -main
   [& args]
   (let [tid (or (first args) default-tid)]
-    (try (loop []
-           (do (http/post server {:body (json/generate-string {:state (parse-gpo gpio-port)
-                                                               :toilet tid})
-                                  :throw-exceptions false
-                                  :content-type :json
-                                  :as :json}) 
-               (Thread/sleep timeout)
-               (recur)))
-         (catch Exception e (println e)))))
+    (try
+      (loop []
+        (let [gpio-port (gpio/open-channel-port 17)]
+          (do (http/post server {:body (json/generate-string
+                                        {:state (parse-gpio gpio-port)
+                                         :toilet tid})
+                                 :throw-exceptions false
+                                 :content-type :json
+                                 :as :json})
+              (gpio/close! gpio-port)
+              (Thread/sleep timeout)
+              (recur))))
+      (catch Exception e (println e)))))
