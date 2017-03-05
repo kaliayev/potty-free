@@ -12,7 +12,7 @@
 (def port-num 17)
 
 (def server
-  "http://dcb0e416.ngrok.io")
+  "http://dcb0e416.ngrok.io/potty")
 
 (def timeout
   5000)
