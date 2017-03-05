@@ -7,21 +7,22 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]])
   (:gen-class))
 
-#_(def gpio-port
+(def default-tid 1)
+
+(def gpio-port
   (gpio/open-channel-port 17))
 
 (def server
-  "http://localhost:3000/potty")
+  "http://dcb0e416.ngrok.io")
 
 (def timeout
-  10000)
+  5000)
 
-#_(defn parse-gpio
+(defn parse-gpio
   [port]
   (let [value (gpio/read-value port)]
-    #_(cond (= value :low) 0
-            (= value :high) 127)
-    value))
+    (cond (= value :high) :occupied
+          (= value :low) :free)))
 
 #_(defn state
   [port]
@@ -29,15 +30,14 @@
     (con)))
 
 (defn -main
-  []
-  (try 
+  [& args]
+  (let [tid (or (first args) default-tid)]
     (try (loop []
-           (do (println (str "It's been " timeout " seconds"))
-               (http/post server {:body (json/generate-string {:timeout timeout})
+           (do (http/post server {:body (json/generate-string {:state (parse-gpo gpio-port)
+                                                               :toilet tid})
+                                  :throw-exceptions false
                                   :content-type :json
-                                  :as :json})
-               #_(println (http/post server {:body "{\"json\": \"input\"}"
-                                           :headers {"Content-Type" "application/json"}}))
+                                  :as :json}) 
                (Thread/sleep timeout)
                (recur)))
          (catch Exception e (println e)))))

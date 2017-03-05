@@ -8,7 +8,9 @@
                  [clj-gpio "0.2.0"]
                  [cheshire "5.7.0"]
                  [clj-http "2.3.0"]]
-  :plugins [[lein-ring "0.9.7"]]
+  :plugins [[lein-ring "0.9.7"]
+            [lein-bin "0.3.4"]]
+  :bin {:name "potty-free"}
   :main potty-free.handler
   :ring {:handler potty-free.handler/app}
   :profiles
