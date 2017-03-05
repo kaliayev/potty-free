@@ -7,7 +7,7 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]])
   (:gen-class))
 
-(def default-tid 1)
+(def default-tid :first)
 
 (def port-num 17)
 
