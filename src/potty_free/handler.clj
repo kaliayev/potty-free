@@ -28,14 +28,17 @@
   (let [tid (or (first args) default-tid)]
     (try
       (loop []
-        (let [gpio-port (gpio/open-channel-port 17)]
-          (do (http/post server {:body (json/generate-string
-                                        {:state (parse-gpio gpio-port)
-                                         :toilet tid})
-                                 :throw-exceptions false
-                                 :content-type :json
-                                 :as :json})
-              (gpio/close! gpio-port)
-              (Thread/sleep timeout)
-              (recur))))
+        (let [gpio-port (gpio/open-channel-port port-num)]
+          (do
+            (println "port " port-num " is open")
+            (http/post server {:body (json/generate-string
+                                      {:state (parse-gpio gpio-port)
+                                       :toilet tid})
+                               :throw-exceptions false
+                               :content-type :json
+                               :as :json})
+            (gpio/close! gpio-port)
+            (println "port " port-num " is closed")
+            (Thread/sleep timeout)
+            (recur))))
       (catch Exception e (println e)))))
