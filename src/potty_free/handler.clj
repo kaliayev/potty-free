@@ -38,7 +38,7 @@
                                    :content-type :json
                                    :as :json}))
               (a/close! ch)
-              (gpio/close! (gpio/open-channel-port port-num))
+              (gpio/close! gpio-port)
               (println "port " port-num " is closed")
               (Thread/sleep timeout))
             (recur)))))
