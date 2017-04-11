@@ -18,27 +18,40 @@
 (def timeout
   5000)
 
+(defmacro add-shutdown-hook
+  "Add shutdown hooks to runtime. Can be called multiple times."
+  [& body]
+  `(.. Runtime getRuntime (addShutdownHook
+                           (Thread. (fn [] ~@body)))))
+
 (defn parse-value
   [value]
   (cond (= value :high) false
         (= value :low) true))
 
-(defn -main
-  [& args]
-  (let [tid (or (first args) this-tid)]
-    (a/go (loop []
-            (let [gpio-port (gpio/open-channel-port port-num)
-                  _ (gpio/set-direction! gpio-port :in)
-                  _ (gpio/set-edge! gpio-port :both)
-                  ch (gpio/create-edge-channel gpio-port)]
-              (when-let [value (a/<! ch)]
-                (http/post server {:body (json/generate-string
-                                          {:state (parse-value value)})
-                                   :throw-exceptions false
-                                   :content-type :json
-                                   :as :json}))
-              (a/close! ch)
-              (gpio/close! gpio-port)
-              (println "port " port-num " is closed")
-              (Thread/sleep timeout))
-            (recur)))))
+(defn process-gpio-chan
+  [ch gpio-port]
+  (loop []
+    (when-let [value (a/<!! ch)]
+      (http/post server {:body (json/generate-string
+                                {:state (-> gpio-port
+                                            gpio/read-value
+                                            parse-value)})
+                         :throw-exceptions false
+                         :content-type :json
+                         :as :json}))
+    (recur)))
+
+(defn -main [& args]
+  (let [tid (or (first args) this-tid)
+        gpio-port (-> (gpio/open-channel-port port-num)
+                      (gpio/set-direction! :in)
+                      (gpio/set-edge! :both))
+        gpio< (gpio/create-edge-channel gpio-port)]
+    (add-shutdown-hook (do (a/close! gpio<)
+                           (gpio/close! gpio-port)))
+    (try (process-gpio-chan gpio< gpio-port)
+         (catch Throwable e
+           (println (pr-str e) "\n\nUser Terminated!!!"))
+         (finally (do (a/close! gpio<)
+                      (gpio/close! gpio-port))))))

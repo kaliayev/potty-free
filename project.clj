@@ -17,4 +17,4 @@
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.0"]]}
    :uberjar {:aot :all}}
-  :repl-options {:timeout 1200000})
+  :repl-options {:timeout 12000000})
