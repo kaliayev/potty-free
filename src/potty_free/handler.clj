@@ -36,12 +36,13 @@
       (let [body (json/generate-string
                   {:status (-> gpio-port
                                gpio/read-value
-                               parse-value)})]
-        (println (str "\n\n" body "\n"))
-        (http/post server {:body body
-                           :throw-exceptions false
-                           :content-type :json
-                           :as :json})))
+                               parse-value)})
+            _ (println (str "\n\n" body "\n"))
+            result (http/post server {:body body
+                                      :throw-exceptions false
+                                      :content-type :json
+                                      :as :json})]
+        (println (str "\n\n" result "\n"))))
     (recur)))
 
 (defn -main [& args]
