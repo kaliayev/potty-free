@@ -33,6 +33,10 @@
   [ch gpio-port]
   (loop []
     (when-let [value (a/<!! ch)]
+      (println (str "\n\n"
+                    (-> gpio-port
+                        gpio/read-value)
+                    "\n"))
       (http/post server {:body (json/generate-string
                                 {:state (-> gpio-port
                                             gpio/read-value
