@@ -33,17 +33,15 @@
   [ch gpio-port]
   (loop []
     (when-let [value (a/<!! ch)]
-      (println (str "\n\n"
-                    (-> gpio-port
-                        gpio/read-value)
-                    "\n"))
-      (http/post server {:body (json/generate-string
-                                {:state (-> gpio-port
-                                            gpio/read-value
-                                            parse-value)})
-                         :throw-exceptions false
-                         :content-type :json
-                         :as :json}))
+      (let [body (json/generate-string
+                  {:status (-> gpio-port
+                               gpio/read-value
+                               parse-value)})]
+        (println (str "\n\n" body "\n"))
+        (http/post server {:body body
+                           :throw-exceptions false
+                           :content-type :json
+                           :as :json})))
     (recur)))
 
 (defn -main [& args]
